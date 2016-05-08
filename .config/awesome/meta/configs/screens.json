@@ -1,0 +1,41 @@
+[
+    {
+        "name"                 : "VGA1",
+        "width"                : 1920,
+        "height"               : 1080,
+        "x_beg"                : 0,
+        "y_beg"                : 0,
+        "screen_number"        : 1,
+        "screen_real_number"   : 2,
+        "screen_left_number"   : 3,
+        "screen_right_number"  : 2,
+        "screen_top_number"    : 1,
+        "screen_bottom_number" : 1
+    },
+    {
+        "name"                 : "eDP1",
+        "width"                : 1920,
+        "height"               : 1080,
+        "x_beg"                : 1920,
+        "y_beg"                : 0,
+        "screen_number"        : 2,
+        "screen_real_number"   : 1,
+        "screen_left_number"   : 1,
+        "screen_right_number"  : 3,
+        "screen_top_number"    : 2,
+        "screen_bottom_number" : 2
+    },
+    {
+        "name"                 : "HDMI1",
+        "width"                : 1920,
+        "height"               : 1080,
+        "x_beg"                : 3840,
+        "y_beg"                : 0,
+        "screen_number"        : 3,
+        "screen_real_number"   : 3,
+        "screen_left_number"   : 2,
+        "screen_right_number"  : 1,
+        "screen_top_number"    : 3,
+        "screen_bottom_number" : 3
+    }
+]
