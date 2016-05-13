@@ -29,17 +29,19 @@ end
 
 local battery_widget = {}
 battery_widget.adapter = "BAT1"
-battery_widget.charging = ""
 battery_widget.state = 100
 battery_widget.widget_text = wibox.widget.textbox()
-battery_widget.has_battery = file_exists("/sys/class/power_supply/"..battery_widget.adapter)
-
-battery_widget.widget_progress = awful.widget.progressbar()
-battery_widget.widget_progress:set_width(6)
-battery_widget.widget_progress:set_height(8)
-battery_widget.widget_progress:set_vertical(true)
-battery_widget.widget_progress:set_background_color("#494B4F")
-battery_widget.widget_progress:set_color('#00bfff')
+battery_widget.has_battery = file_exists(
+    "/sys/class/power_supply/"..battery_widget.adapter
+)
+battery_widget.widget_image = wibox.widget.imagebox()
+battery_widget.icon_path = nil
+battery_widget.icon_0 = nil
+battery_widget.icon_1 = nil
+battery_widget.icon_2 = nil
+battery_widget.icon_3 = nil
+battery_widget.icon_4 = nil
+battery_widget.icon_charging = nil
 
 battery_widget.get_battery_state = function (adapter)
     local fcur = io.open("/sys/class/power_supply/"..adapter.."/charge_now")
@@ -52,6 +54,7 @@ battery_widget.get_battery_state = function (adapter)
     fcap:close()
     fsta:close()
 
+    local dir = nil
     local battery = math.floor(cur * 100 / cap)
     if sta:match("Charging") then
         dir = 1
@@ -77,22 +80,39 @@ battery_widget.update = function()
         end
 
         battery_widget.state = st
+        battery_widget.widget_text:set_text(battery_widget.state)
 
-        if charging == 1 then
-            battery_widget.charging = "Charging"
-        elseif charging == -1 then
-            battery_widget.charging = "Discharging"
-        else
-            battery_widget.charging = ""
+        if charging == -1 then
+            if st > 90 then
+                battery_widget.widget_icon:set_image(
+                    battery_widget.icon_path .. battery_widget.icon_4
+                )
+            elseif st > 60 then
+                battery_widget.widget_icon:set_image(
+                    battery_widget.icon_path .. battery_widget.icon_3
+                )
+            elseif st > 40 then
+                battery_widget.widget_icon:set_image(
+                    battery_widget.icon_path .. battery_widget.icon_2
+                )
+            elseif st > 20 then
+                battery_widget.widget_icon:set_image(
+                    battery_widget.icon_path .. battery_widget.icon_1
+                )
+            else
+                battery_widget.widget_icon:set_image(
+                    battery_widget.icon_path .. battery_widget.icon_0
+                )
+            end
+        elseif charging == 1 then
+                battery_widget.widget_icon:set_image(
+                    battery_widget.icon_path .. battery_widget.icon_charging
+                )
         end
 
-        battery_widget.widget_text:set_text("Bat: " .. battery_widget.state)
 
-        battery_widget.widget_progress:set_value(battery_widget.state / 100)
     else
-        battery_widget.charging = "No battery"
-        battery_widget.widget_text:set_text("⚡⚡")
-        battery_widget.widget_progress:set_value(1)
+        battery_widget.widget_text:set_text("")
     end
 end
 
@@ -117,6 +137,10 @@ battery_widget.should_notify = function (current_state)
     else
         return false
     end
+end
+
+battery_widget.initi = function(icon_path)
+    battery_widget.icon_path = icon_path
 end
 
 if battery_widget.has_battery then

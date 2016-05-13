@@ -1,40 +1,48 @@
-local awful = require("awful")
-local vicious = require("vicious")
 local wibox = require("wibox")
+local awful = require("awful")
+local naughty = require("naughty")
 
 local memory_widget = {}
-memory_widget.widget_progress = awful.widget.progressbar()
-memory_widget.widget_progress:set_width(6)
-memory_widget.widget_progress:set_height(10)
-memory_widget.widget_progress:set_vertical(true)
-memory_widget.widget_progress:set_background_color("#494B4F")
-memory_widget.widget_progress:set_border_color(nil)
-memory_widget.widget_progress:set_color(
-    {
-        type = "linear",
-        from = { 0, 0 },
-        to = { 10,0 },
-        stops = {
-            {0, "#00BFFF"},
-            {0.5, "#00BFFF"},
-            {1, "#00BFFF"}
-        }
-    }
-)
 
-memory_widget.widget_text = wibox.widget.textbox()
+do
+    local get_memory_info = function()
+        local handler = io.popen("cat /proc/meminfo | awk '{print $2}'")
+        local total = handler:read()
+        local free = handler:read()
+        handler:close()
+        naughty.notify({title="asdf",text=total})
 
-vicious.register(
-    memory_widget.widget_text,
-    vicious.widgets.mem,
-    "Mem: $1%"
-)
+        total = tonumber(total)
+        free = tonumber(free)
+        local busy = total - free
 
-vicious.register(
-    memory_widget.widget_progress,
-    vicious.widgets.mem,
-    "$1",
-    13
-)
+        return {total = total, busy = busy}
+    end
+
+    memory_widget.widget_text = wibox.widget.textbox()
+
+    memory_widget.update = function()
+        memory_info = get_memory_info()
+
+        --local total = memory_info["total"]
+        --local busy = memory_info["busy"]
+        --local result = math.floor(busy / total * 100)
+
+        --memory_widget.widget_text:set_text(
+        --    string.format('%d', result) .. '%'
+        --)
+        local total = memory_info["total"] / (1024 * 1024)
+        local busy = memory_info["busy"] / (1024 * 1024)
+
+        memory_widget.widget_text:set_text(
+            string.format('%.2fG/%.2fG', busy, total)
+        )
+    end
+
+end
+
+local mytimer = timer( {timeout = 1} )
+mytimer:connect_signal("timeout", memory_widget.update)
+--mytimer:start()
 
 return memory_widget

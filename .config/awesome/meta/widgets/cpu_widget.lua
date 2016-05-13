@@ -1,42 +1,42 @@
+-- requires:
+-- sysstat (mpstat)
+-- lm-sensors (sensors)
 local wibox = require("wibox")
-local vicious = require("vicious")
 local awful = require("awful")
 
-local cpu_widget = {}
+cpu_widget = {}
 
-vicious.cache(vicious.widgets.cpu)
+do
+    local get_proc_temp = function()
+        local handler = io.popen("sensors | awk 'NR==3{print $2;}'")
+        local result = handler:read("*a")
+        handler:close()
+        return result
+    end
 
-cpu_widget.widget_progress = awful.widget.progressbar()
-cpu_widget.widget_progress:set_width(6)
-cpu_widget.widget_progress:set_height(10)
-cpu_widget.widget_progress:set_vertical(true)
-cpu_widget.widget_progress:set_background_color("#494B4F")
-cpu_widget.widget_progress:set_border_color(nil)
-cpu_widget.widget_progress:set_color(
-    {
-        type = "linear",
-        from = { 0, 0 },
-        to = { 10,0 },
-        stops = {
-            {0, "#00BFFF"},
-            {0.5, "#00BFFF"},
-            {1, "#00BFFF"}
-        }
-    }
-)
+    local get_proc_idle = function()
+        local handler = io.popen("mpstat | awk 'NR==4{print $4;}'")
+        local result = handler:read("*a")
+        handler:close()
+        return result
+    end
 
-cpu_widget.text = wibox.widget.textbox()
-vicious.register(
-    cpu_widget.text,
-    vicious.widgets.cpu,
-    "CPU: $1%"
-)
+    cpu_widget.cpu_temp_widget = wibox.widget.textbox()
+    cpu_widget.cpu_idle_widget = wibox.widget.textbox()
 
-vicious.register(
-    cpu_widget.widget_progress,
-    vicious.widgets.mem,
-    "$1",
-    13
-)
+    cpu_widget.update = function()
+        local temp = get_proc_temp()
+        local idle = get_proc_idle()
+        idle = idle:gsub('\n', '')
+
+        cpu_widget.cpu_temp_widget:set_text(temp)
+        cpu_widget.cpu_idle_widget:set_text(idle)
+    end
+end
+
+local mytimer = timer({ timeout = 1 })
+mytimer:connect_signal("timeout", cpu_widget.update)
+mytimer:start()
 
 return cpu_widget
+

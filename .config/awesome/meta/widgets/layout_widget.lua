@@ -1,30 +1,44 @@
 local wibox = require("wibox")
 local awful = require("awful")
+local naughty = require("naughty")
 
-local layout_widget = {}
+local layout_widget = {
+    current_layout = 1,
+    layouts = nil,
+    cmd = "setxkbmap"
+}
 
-layout_widget.cmd = "setxkbmap"
-layout_widget.layout = { { "us", "" , "US" }, { "ru", "" , "RU" } } 
-layout_widget.current = 1
-layout_widget.count = 3
 layout_widget.widget = wibox.widget.textbox()
-layout_widget.widget:set_text(
-    " " .. layout_widget.layout[layout_widget.current][3] .. " "
-)
 
+layout_widget.update_widget = function()
+    local l = layout_widget.layouts[layout_widget.current_layout]
+    layout_widget.widget:set_text(l.visible)
+end
 
 layout_widget.switch = function ()
-    if layout_widget.current == 2 then
-        layout_widget.current = 1
-    else
-        layout_widget.current = 2
-    end
+    if layout_widget.layouts ~= nil then
+        local len = 2
+        if len > 1 then
+            layout_widget.current_layout = layout_widget.current_layout + 1
 
-    local t = layout_widget.layout[layout_widget.current]
-    layout_widget.widget:set_text(
-        layout_widget.layout[layout_widget.current][3]
-    )
-    os.execute( layout_widget.cmd .. " " .. t[1] .. " " .. t[2] )
+            if layout_widget.current_layout > len then
+                layout_widget.current_layout = 1
+            end
+
+            local l = layout_widget.layouts[layout_widget.current_layout]
+            local command = 
+                layout_widget.cmd .. " " .. l.name .. " " .. l.args
+            print(command)
+
+            os.execute(command)
+            layout_widget:update_widget()
+        end
+    end
+end
+
+layout_widget.initi = function(blyat_mooduck_ti_a_ne_peremenna9)
+    layout_widget.layouts = blyat_mooduck_ti_a_ne_peremenna9
+    print(blyat_mooduck)
 end
 
 layout_widget.widget:buttons(

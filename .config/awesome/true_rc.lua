@@ -9,13 +9,12 @@ local menubar = require("menubar")
 local vicious = require("vicious")
 local json = require("json")
 
-require("/meta/widgets/redshift_widget")
-
 layout_widget = require("/meta/widgets/layout_widget")
 volume_widget = require("/meta/widgets/volume_widget")
 battery_widget = require("/meta/widgets/battery_widget")
-memory_widget = require("/meta/widgets/memory_widget")
 cpu_widget = require("/meta/widgets/cpu_widget")
+hdd_widget = require("/meta/widgets/hdd_widget")
+memory_widget = require("/meta/widgets/memory_widget")
 
 -- {{{ Configuration
 configuration = {}
@@ -61,11 +60,14 @@ configuration.paths = {}
 configuration.paths.home = "/home/mezzari"
 configuration.paths.conf = configuration.paths.home .. "/.config/awesome"
 configuration.paths.theme = configuration.paths.conf .. "/themes/powerarrowf/theme.lua"
-configuration.paths.wallpaper = configuration.paths.conf .. "/meta/wallpapers/senia.jpg"
 configuration.paths.idea = "/home/data/Programs/idea/bin/idea.sh"
+configuration.paths.icons = configuration.paths.conf .. "/meta/icons"
 configuration.paths.config_dir = configuration.paths.conf .. "/meta/configs"
 configuration.paths.config_screens = configuration.paths.config_dir .. "/screens.json"
 configuration.paths.config_wallpapers = configuration.paths.config_dir .. "/wallpapers.json"
+configuration.paths.config_keyboard = configuration.paths.config_dir .. "/keyboard.json"
+configuration.paths.config_client = configuration.paths.config_dir .. "/client.json"
+configuration.paths.config_autostart = configuration.paths.config_dir .. "/autorun.json"
 
 -- Contains programs
 configuration.program = {}
@@ -111,35 +113,6 @@ configuration.program_list = {
 -- Options {{{
 configuration.options = {}
 
--- keyboard settings {{{
-configuration.options.keyboard = {
-    layouts = {
-        {
-            name = "ru",
-            args = "",
-            vis = "RU"
-        },
-        {
-            name = "en",
-            args = "",
-            vis = "EN"
-        }
-    },
-    delay = 200,
-    repeat_rate = 80
-}
--- }}}
-
--- client settings {{{
-configuration.options.client = {
-    titlebars_enabled = true,
-    opacity = 0.95,
-    opacity_max = 1,
-    opacity_min = 0.4,
-    opacity_step = 0.05
-}
--- }}}
-
 -- layout settings {{{
 configuration.options.layout_list = {
     awful.layout.suit.floating,
@@ -168,166 +141,26 @@ configuration.options.tags = {
 }
 -- }}}
 
--- defaults {{{
-configuration.default = {
-    layout = configuration.options.layout_list[2],
-    mwfact = 0.5,
-    nmaster = 1,
-    ncol = ncol
-}
 -- }}}
-
--- }}}
-
-configuration.grabbers = {}
-configuration.grabbers.client_grabber = nil
-configuration.grabbers.client_target = nil
-
-configuration.grabbers.state_selection = 1
-configuration.grabbers.state_resizing  = 2
-configuration.grabbers.state_moving    = 3
-configuration.grabbers.state_pointer    = 4
-
-configuration.grabbers.client_current_state = configuration.grabbers.state_selection
 
 configuration.func = {}
 
--- {{{ Grabbers
--- callback for client grabber
-configuration.func.grabber_client_callback = function(mod_table, key, event)
-    if event == "release" then return end
-
-    local power = 5
-    local cl = configuration.grabbers.client_target
-
---    local mod_pressed = false
---    local alt_pressed = false
---    local ctrl_pressed = false
---    local shift_pressed = false
-
---    for i, mod in ipairs(mod_table) do
---        if      mod == configuration.constant.key.mod then
---            mod_pressed = true
---
---        elseif  mod == configuration.constant.key.alt then
---            alt_pressed = true
---
---        elseif  mod == configuration.constant.key.ctrl then
---            ctrl_pressed = true
---
---        elseif  mod == configuration.constant.key.shift then
---            shift_pressed = true
---        end
---    end
-
---    if shift_pressed then
---        power = power * 5
---    end
---
---    if alt_pressed then
---        power = power * 5
---    end
---
---    if ctrl_pressed then
---        power = power * 5
---    end
---
---    if mod_pressed then
---        power = power * 5
---    end
-
-    if (configuration.grabbers.client_current_state == configuration.grabbers.state_selection) then
-        if      key == 'q' then
-            awful.keygrabber.stop(configuration.grabbers.client_grabber)
-        elseif  key == 'r' then
-            configuration.grabbers.client_current_state = configuration.grabbers.state_resizing
-        elseif  key == 'm' then
-            configuration.grabbers.client_current_state = configuration.grabbers.state_moving
-        elseif  key == 'p' then
-            configuration.grabbers.client_current_state = configuration.grabbers.state_pointer
-        end
-
-    elseif (configuration.grabbers.client_current_state == configuration.grabbers.state_resizing) then
-
-        if      key == 'q' then
-            configuration.grabbers.client_current_state = configuration.grabbers.state_selection
-        elseif     key == 'k'   then
-            awful.client.moveresize(0, 0, 0, -power, cl)
-        elseif  key == 'j' then
-            awful.client.moveresize(0, 0, 0, power, cl)
-        elseif  key == 'l' then
-            awful.client.moveresize(0, 0, power, 0, cl)
-        elseif  key == 'h'  then
-            awful.client.moveresize(0, 0, -power, 0, cl)
-        end
-
-    elseif (configuration.grabbers.client_current_state == configuration.grabbers.state_moving) then
-        if      key == 'q' then
-            configuration.grabbers.client_current_state = configuration.grabbers.state_selection
-        elseif  key == 'k' then
-            awful.client.moveresize(0, -power, 0, 0, cl)
-        elseif  key == 'j' then
-            awful.client.moveresize(0, power, 0, 0, cl)
-        elseif  key == 'l' then
-            awful.client.moveresize(power, 0, 0, 0, cl)
-        elseif  key == 'h' then
-            awful.client.moveresize(-power, 0, 0, 0, cl)
-        end
-    elseif (configuration.grabbers.client_current_state == configuration.grabbers.state_pointer) then
-        if      key == 'q' then
-            configuration.grabbers.client_current_state = configuration.grabbers.state_selection
-        elseif  key == 'k' then
-            configuration.func.mouse_diff(0, -power)
-        elseif  key == 'j' then
-            configuration.func.mouse_diff(0, power)
-        elseif  key == 'l' then
-            configuration.func.mouse_diff(power, 0)
-        elseif  key == 'h' then
-            configuration.func.mouse_diff(-power, 0)
-        elseif  key == 'p' then
-            configuration.func.mouse_diff_polar(55, power)
-        elseif  key == 'o' then
-            configuration.func.mouse_diff_polar(35, power)
-        elseif  key == 'i' then
-            configuration.func.mouse_diff_polar(15, power)
-        elseif  key == 'u' then
-            configuration.func.mouse_diff_polar(335, power)
-        elseif  key == 'y' then
-            configuration.func.mouse_diff_polar(315, power)
-        elseif  key == 'n' then
-            configuration.func.mouse_diff_polar(225, power)
-        elseif  key == 'm' then
-            configuration.func.mouse_diff_polar(185, power)
-        elseif  key == ',' then
-            configuration.func.mouse_diff_polar(165, power)
-        elseif  key == '.' then
-            configuration.func.mouse_diff_polar(135, power)
-        elseif  key == ';' then
-            configuration.func.mouse_diff_polar(90, power)
-        elseif  key == "f" then
-            configuration.func.mouse_click(1)
-        elseif  key == "d" then
-            configuration.func.mouse_click(3)
-        elseif  key == "r" then
-            configuration.func.mouse_click(4)
-        elseif  key == "e" then
-            configuration.func.mouse_click(5)
-        end
-    end
-end
-
-configuration.func.grabber_client_run = function(c)
-    local cl = c or client.focus
-    if (cl) then
-        configuration.grabbers.client_target = cl
-        configuration.grabbers.client_grabber = awful.keygrabber.run(
-            configuration.func.grabber_client_callback
-        )
-    end
-end
--- }}}
-
 -- {{{ Util function
+
+configuration.func.run_once = function(name, cmd, args)
+    if not cmd then
+        return nil
+    end
+
+    if not args then
+        args = ""
+    end
+
+    awful.util.spawn_with_shell(
+        'pgrep -u $USER -x ' .. name .. ' || ( ' .. cmd .. ' ' .. args .. ' )'
+    )
+end
+
 -- Reads all file content. Returns it's content if it's ok, nil otherwise {{{
 configuration.func.read_all_file_content = function(filepath)
     local f = io.open(filepath, "r")
@@ -375,18 +208,6 @@ configuration.func.real_scr_to_virtual = function(real_scr)
     end
 
     return nil
-end
-
-configuration.func.mouse_click = function(button)
-    awful.util.spawn("xdotool click " .. button)
-end
-
-configuration.func.mouse_diff_polar = function(angle, distance)
-    awful.util.spawn("xdotool mousemove_relative --polar --sync -- " .. angle .. " " .. distance)
-end
-
-configuration.func.mouse_diff = function(diffX, diffY)
-    awful.util.spawn("xdotool mousemove_relative --sync -- " .. diffX .. " " .. diffY)
 end
 
 configuration.func.get_left_screen = function()
@@ -450,30 +271,6 @@ end
 
 configuration.func.edit_config = function()
     awful.util.spawn_with_shell(configuration.cmd.terminal .. " -e " .. configuration.cmd.editor .. " " .. awesome.conffile)
-end
-
-configuration.func.increase_opacity = function()
-    local client_options = configuration.options.client
-
-    if client_options.opacity < client_options.opacity_max then
-        client_options.opacity = client_options.opacity + client_options.opacity_step
-    end
-
-    if client_options.opacity > client_options.opacity_max then
-        client_options.opacity = client_options.opacity_max
-    end
-end
-
-configuration.func.decrease_opacity = function()
-    local client_options = configuration.options.client
-
-    if client_options.opacity > client_options.opacity_min  then
-        client_options.opacity = client_options.opacity - client_options.opacity_step
-    end
-
-    if client_options.opacity < client_options.opacity_min then
-        client_options.opacity = client_options.opacity_max
-    end
 end
 
 configuration.func.exec_prompt = function()
@@ -655,7 +452,7 @@ configuration.func.client_focus_next = function()
 end
 
 configuration.func.client_focus_prev = function()
-    awful.client.focus.byidx(-11)
+    awful.client.focus.byidx(-1)
     if client.focus then
         client.focus:raise()
     end
@@ -684,32 +481,6 @@ end
 
 configuration.func.client_minimize = function(c)
   c.minimized = not c.minimized
-end
-
-configuration.func.client_opaque_less = function(c)
-    local client_options = configuration.options.client
-    local opacity = c.opacity - client_options.opacity_step
-
-    if  opacity and
-        opacity >= client_options.opacity_min then
-            if opacity >= client_options.opacity_max then
-                opacity = client
-            end
-            c.opacity = client_options.opacity_max
-    end
-end
-
-configuration.func.client_opaque_more = function(c)
-    local client_options = configuration.options.client
-    local opacity = c.opacity + client_options.opacity_step
-
-    if  opacity and
-        opacity <= client_options.opacity_max then
-            if opacity <= client_options.opacity_min then
-                opacity = client_options.opacity_min
-            end
-            c.opacity = opacity
-    end
 end
 
 configuration.func.client_kill = function(c)
@@ -759,10 +530,6 @@ configuration.func.move_to_target_tag = function(c, tag_number)
 
 end
 
-configuration.func.move_to_left_tag = function(c)
-
-end
-
 -- }}}
 
 -- {{{ Tag functions
@@ -771,7 +538,42 @@ configuration.func.tag_view_prev = awful.tag.viewprev
 
 configuration.func.tag_view_next = awful.tag.viewnext
 
+configuration.func.tag_move_to_prev = function(c)
+    c = c or client.focus()
+
+    if c ~= nil then
+        local tag_number = awful.tag.getidx()
+    end
+end
+
+configuration.func.tag_move_to_next = function(c)
+    c = c or client.focus()
+
+    if c ~= nil then
+
+    end
+end
+
 -- }}}
+
+configuration.icons = {}
+
+setup_icons = function()
+    configuration.icons.cpu = wibox.widget.imagebox()
+    configuration.icons.cpu:set_image(configuration.paths.icons .. "/cpu.png")
+
+    configuration.icons.space = wibox.widget.textbox()
+    configuration.icons.space:set_text(" ")
+
+    configuration.icons.hdd = wibox.widget.imagebox()
+    configuration.icons.hdd:set_image(configuration.paths.icons .. "/hdd.png")
+
+    configuration.icons.ram = wibox.widget.imagebox()
+    configuration.icons.ram:set_image(configuration.paths.icons .. "/ram.png")
+
+    configuration.icons.separator = wibox.widget.textbox()
+    configuration.icons.separator:set_text('|')
+end
 
 read_config_files = function()
     -- screens
@@ -790,6 +592,26 @@ read_config_files = function()
     configuration.wallpapers = configuration.func.parse_json_from_file(
         configuration.paths.config_wallpapers
     )
+
+    -- keyboard
+    configuration.options.keyboard = configuration.func.parse_json_from_file(
+        configuration.paths.config_keyboard
+    )
+
+    -- client settings
+    configuration.options.client = configuration.func.parse_json_from_file(
+        configuration.paths.config_client
+    )
+
+    configuration.options.autostart = configuration.func.parse_json_from_file(
+        configuration.paths.config_autostart
+    )
+end
+
+run_autostart_programs = function()
+    for i, v in ipairs(configuration.options.autostart) do
+        configuration.func.run_once(v.name, v.cmd, v.args)
+    end
 end
 
 setup_xrandr = function()
@@ -837,18 +659,6 @@ end
 setup_theme = function()
     beautiful.init(configuration.paths.theme)
 
-    -- bug: idk why, but screen's wallpapers are setted in a fixed order
-    for s = 1, screen.count() do
---        local real_scr = configuration.screens.mapper[s]
---        local selected_scr = configuration.screens[real_scr]
---
---        if selected_scr.custom_wallpaper then
---            gears.wallpaper.maximized(selected_scr.wallpaper_path, s, true)
---        else
---            gears.wallpaper.maximized(configuration.paths.wallpaper, s, true)
---        end
-    end
-
     for i, wallpaper in ipairs(configuration.wallpapers) do
          local real_scr = configuration.screens[wallpaper.screen_number].screen_real_number
          if real_scr > 0 and real_scr <= screen.count() then
@@ -886,6 +696,17 @@ setup_menu = function()
         { "open terminal", configuration.cmd.terminal }
     }
 })
+end
+
+setup_widgets = function()
+    layout_widget.initi(configuration.options.keyboard.layouts)
+    volume_widget.initi(configuration.paths.icons)
+    battery_widget.initi(configuration.paths.icons)
+
+    cpu_widget:update()
+    hdd_widget:update()
+    memory_widget:update()
+    volume_widget:update()
 end
 
 setup_screen_border = function()
@@ -955,21 +776,34 @@ setup_screen_border = function()
 
         if s == 1 then
             right_layout:add(wibox.widget.systray())
-            right_layout:add(redshift_widget.widget)
         end
-
-        right_layout:add(memory_widget.widget_text)
-        right_layout:add(memory_widget.widget_progress)
-        right_layout:add(cpu_widget.text)
-        right_layout:add(cpu_widget.widget_progress)
 
         if battery_widget.has_battery then
+            right_layout:add(configuration.icons.space)
             right_layout:add(battery_widget.widget_text)
-            right_layout:add(battery_widget.widget_progress)
+            right_layout:add(battery_widget.widget_icon)
         end
 
+        right_layout:add(configuration.icons.space)
+        right_layout:add(configuration.icons.cpu)
+        right_layout:add(cpu_widget.cpu_temp_widget)
+        right_layout:add(configuration.icons.separator)
+        right_layout:add(configuration.icons.space)
+        right_layout:add(cpu_widget.cpu_idle_widget)
+        right_layout:add(configuration.icons.space)
+
+        right_layout:add(configuration.icons.ram)
+        right_layout:add(memory_widget.widget_text)
+        right_layout:add(configuration.icons.space)
+
+        right_layout:add(configuration.icons.hdd)
+        right_layout:add(hdd_widget.hdd_temp_widget)
+        right_layout:add(configuration.icons.space)
+
+        right_layout:add(volume_widget.widget_icon)
         right_layout:add(volume_widget.widget_text)
-        right_layout:add(volume_widget.widget_progress)
+        right_layout:add(configuration.icons.space)
+
         right_layout:add(layout_widget.widget)
         right_layout:add(mytextclock)
         right_layout:add(scr.layoutbox)
@@ -1172,30 +1006,6 @@ setup_keys = function()
             keys.space, configuration.func.cycle_keyboard_layout)
     )
 
-    -- Tags {{{
-    for i = 1, configuration.options.tags.count do
-        globalkeys = awful.util.table.join(globalkeys,
-            awful.key({ keys.mod }, "#" .. i + 9,
-            function()
-                local screen = configuration.screens.selected
-                local tag = configuration.screens[screen].tags[i]
-                if tag then
-                    awful.tag.viewonly(tag)
-                end
-            end
-            ),
-            awful.key({ keys.mod, keys.shift }, "#" .. i + 9,
-            function()
-                if client.focus then
-                    local tag = awful.tag.gettags(client.focus.screen)[i]
-                    if tag then
-                        awful.client.movetotag(tag)
-                    end
-                end
-            end)
-        )
-    end
-    -- }}}
 
 
     clientkeys = awful.util.table.join(
@@ -1221,6 +1031,49 @@ setup_keys = function()
         awful.button({ keys.mod }, 1, awful.mouse.client.move),
         awful.button({ keys.mod }, 3, awful.mouse.client.resize)
     )
+
+    -- Tags keys {{{
+    globalkeys = awful.util.table.join(globalkeys,
+        awful.key( { keys.mod, keys.alt },
+            "l", configuration.func.tag_view_next
+        ),
+
+        awful.key( { keys.mod, keys.alt },
+            "h", configuration.func.tag_view_prev
+        ),
+
+        awful.key( { keys.mod, keys.alt, keys.shift },
+            "l", configuration.func.tag_move_to_next
+        ),
+
+        awful.key( { keys.mod, keys.alt, keys.shift },
+            "h", configuration.func.tag_move_to_prev
+        )
+    )
+
+    for i = 1, configuration.options.tags.count do
+        globalkeys = awful.util.table.join(globalkeys,
+            awful.key({ keys.mod, keys.alt }, "#" .. i + 9,
+            function()
+                local screen = configuration.screens.selected
+                local tag = configuration.screens[screen].tags[i]
+                if tag then
+                    awful.tag.viewonly(tag)
+                end
+            end
+            ),
+            awful.key({ keys.mod, keys.shift, keys.alt }, "#" .. i + 9,
+            function()
+                if client.focus then
+                    local tag = awful.tag.gettags(client.focus.screen)[i]
+                    if tag then
+                        awful.client.movetotag(tag)
+                    end
+                end
+            end)
+        )
+    end
+    -- }}}
 
     -- Screen keys{{{
 
@@ -1358,26 +1211,29 @@ setup_signals = function()
 
     client.connect_signal("focus",
         function(c)
-            c.border_color = beautiful.border_focus
-            c.opacity = configuration.options.client.opacity_max
+            --c.border_color = beautiful.border_focus
+            c.opacity = configuration.options.client.opacity_focused
         end
     )
 
     client.connect_signal("unfocus",
         function(c)
-            c.border_color = beautiful.border_normal
-            c.opacity = configuration.options.client.opacity
+            --c.border_color = beautiful.border_normal
+            c.opacity = configuration.options.client.opacity_unfocused
         end
     )
 end
 
+setup_icons()
 read_config_files()
+run_autostart_programs()
 setup_xrandr()
 setup_error_handler()
 setup_theme()
 setup_x_server()
 setup_tags()
 setup_menu()
+setup_widgets()
 setup_screen_border()
 setup_keys()
 setup_rules()
