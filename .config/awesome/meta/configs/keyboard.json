@@ -1,0 +1,16 @@
+{
+    "layouts" : [
+        {
+            "name" : "ru",
+            "args" : "",
+            "visible" : "RU"
+        },
+        {
+            "name" : "us",
+            "args" : "",
+            "visible" : "EN"
+        }
+    ],
+    "delay" : 200,
+    "repeat_rate" : 80
+}

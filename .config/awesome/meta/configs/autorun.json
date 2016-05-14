@@ -1,0 +1,29 @@
+[
+    {
+        "name" : "redshift-gtk",
+        "cmd" : "redshift-gtk",
+        "args" : ""
+    },
+    {
+        "name" : "blueberry-tray",
+        "cmd" : "blueberry-tray",
+        "args" : ""
+    },
+    {
+        "name" : "unagi",
+        "cmd" : "unagi",
+        "args" : ""
+    },
+    {
+        "name" : "pulseaudio",
+        "cmd" : "pulseaudio",
+        "args" : "--start"
+    },
+    {
+        "name" : "nm-applet",
+        "cmd" : "nm-applet",
+        "args" : ""
+    }
+
+
+]
