@@ -34,14 +34,14 @@ battery_widget.widget_text = wibox.widget.textbox()
 battery_widget.has_battery = file_exists(
     "/sys/class/power_supply/"..battery_widget.adapter
 )
-battery_widget.widget_image = wibox.widget.imagebox()
+battery_widget.widget_icon = wibox.widget.imagebox()
 battery_widget.icon_path = nil
-battery_widget.icon_0 = nil
-battery_widget.icon_1 = nil
-battery_widget.icon_2 = nil
-battery_widget.icon_3 = nil
-battery_widget.icon_4 = nil
-battery_widget.icon_charging = nil
+battery_widget.icon_0 = "/battery_0.png"
+battery_widget.icon_1 = "/battery_1.png"
+battery_widget.icon_2 = "/battery_2.png"
+battery_widget.icon_3 = "/battery_3.png"
+battery_widget.icon_4 = "/battery_4.png"
+battery_widget.icon_charging = "/battery_charging.png"
 
 battery_widget.get_battery_state = function (adapter)
     local fcur = io.open("/sys/class/power_supply/"..adapter.."/charge_now")
@@ -80,7 +80,7 @@ battery_widget.update = function()
         end
 
         battery_widget.state = st
-        battery_widget.widget_text:set_text(battery_widget.state)
+        battery_widget.widget_text:set_text(battery_widget.state .. "%")
 
         if charging == -1 then
             if st > 90 then
@@ -93,11 +93,11 @@ battery_widget.update = function()
                 )
             elseif st > 40 then
                 battery_widget.widget_icon:set_image(
-                    battery_widget.icon_path .. battery_widget.icon_2
+                    battery_widget.icon_path ..battery_widget.icon_2
                 )
             elseif st > 20 then
                 battery_widget.widget_icon:set_image(
-                    battery_widget.icon_path .. battery_widget.icon_1
+                    battery_widget.icon_path ..battery_widget.icon_1
                 )
             else
                 battery_widget.widget_icon:set_image(
@@ -106,7 +106,7 @@ battery_widget.update = function()
             end
         elseif charging == 1 then
                 battery_widget.widget_icon:set_image(
-                    battery_widget.icon_path .. battery_widget.icon_charging
+                    battery_widget.icon_path .battery_widget.icon_charging
                 )
         end
 
@@ -144,8 +144,6 @@ battery_widget.initi = function(icon_path)
 end
 
 if battery_widget.has_battery then
-    battery_widget.update()
-
     battery_widget.timer = timer({ timeout = 30})
     battery_widget.timer:connect_signal(
         "timeout",

@@ -13,7 +13,6 @@ layout_widget = require("/meta/widgets/layout_widget")
 volume_widget = require("/meta/widgets/volume_widget")
 battery_widget = require("/meta/widgets/battery_widget")
 cpu_widget = require("/meta/widgets/cpu_widget")
-hdd_widget = require("/meta/widgets/hdd_widget")
 memory_widget = require("/meta/widgets/memory_widget")
 
 -- {{{ Configuration
@@ -57,7 +56,7 @@ configuration.menu = {}
 
 -- Contains paths to some things
 configuration.paths = {}
-configuration.paths.home = "/home/mezzari"
+configuration.paths.home = "/home/yukino"
 configuration.paths.conf = configuration.paths.home .. "/.config/awesome"
 configuration.paths.theme = configuration.paths.conf .. "/themes/powerarrowf/theme.lua"
 configuration.paths.idea = "/home/data/Programs/idea/bin/idea.sh"
@@ -565,8 +564,6 @@ setup_icons = function()
     configuration.icons.space = wibox.widget.textbox()
     configuration.icons.space:set_text(" ")
 
-    configuration.icons.hdd = wibox.widget.imagebox()
-    configuration.icons.hdd:set_image(configuration.paths.icons .. "/hdd.png")
 
     configuration.icons.ram = wibox.widget.imagebox()
     configuration.icons.ram:set_image(configuration.paths.icons .. "/ram.png")
@@ -701,10 +698,11 @@ end
 setup_widgets = function()
     layout_widget.initi(configuration.options.keyboard.layouts)
     volume_widget.initi(configuration.paths.icons)
+
     battery_widget.initi(configuration.paths.icons)
+    battery_widget.update()
 
     cpu_widget:update()
-    hdd_widget:update()
     memory_widget:update()
     volume_widget:update()
 end
@@ -780,8 +778,8 @@ setup_screen_border = function()
 
         if battery_widget.has_battery then
             right_layout:add(configuration.icons.space)
-            right_layout:add(battery_widget.widget_text)
             right_layout:add(battery_widget.widget_icon)
+            right_layout:add(battery_widget.widget_text)
         end
 
         right_layout:add(configuration.icons.space)
@@ -794,10 +792,6 @@ setup_screen_border = function()
 
         right_layout:add(configuration.icons.ram)
         right_layout:add(memory_widget.widget_text)
-        right_layout:add(configuration.icons.space)
-
-        right_layout:add(configuration.icons.hdd)
-        right_layout:add(hdd_widget.hdd_temp_widget)
         right_layout:add(configuration.icons.space)
 
         right_layout:add(volume_widget.widget_icon)
