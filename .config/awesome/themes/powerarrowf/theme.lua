@@ -5,7 +5,7 @@
 theme = {}
 
 -- Todo:  Change the $USER to yourself.
-pathToConfig = "/home/mezzari/.config/awesome/themes/powerarrowf/"
+pathToConfig = "/home/yukino/.config/awesome/themes/powerarrowf/"
 
 theme.font          = "sans 8"
 

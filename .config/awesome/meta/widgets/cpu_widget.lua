@@ -8,7 +8,7 @@ cpu_widget = {}
 
 do
     local get_proc_temp = function()
-        local handler = io.popen("sensors | awk 'NR==7{print $4;}'")
+        local handler = io.popen("sensors | awk 'NR==13{print $4;}'")
         local result = handler:read("*a")
         handler:close()
         return result

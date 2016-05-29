@@ -14,6 +14,7 @@ volume_widget = require("/meta/widgets/volume_widget")
 battery_widget = require("/meta/widgets/battery_widget")
 cpu_widget = require("/meta/widgets/cpu_widget")
 memory_widget = require("/meta/widgets/memory_widget")
+nvidia_widget = require("/meta/widgets/nvidia_widget")
 
 -- {{{ Configuration
 configuration = {}
@@ -70,10 +71,10 @@ configuration.paths.config_autostart = configuration.paths.config_dir .. "/autor
 
 -- Contains programs
 configuration.program = {}
-configuration.program.browser = "chromium --user-data-dir=/home/data/tmp/chromium"
-configuration.program.browser_1 = "chromium --user-data-dir=/home/data/tmp/chromium"
-configuration.program.browser_2 = "chromium --user-data-dir=/home/data/tmp/chromium_2"
-configuration.program.browser_3 = "chromium --user-data-dir=/home/data/tmp/chromium_3"
+configuration.program.browser = "firefox"
+configuration.program.browser_1 = "firefox"
+configuration.program.browser_2 = "firefox"
+configuration.program.browser_3 = "firefox"
 configuration.program.keymanager = "keepassx"
 configuration.program.idea = "sh " .. configuration.paths.idea
 configuration.program.android_studio = "/home/data/Programs/android-studio/bin/studio.sh"
@@ -558,6 +559,9 @@ end
 configuration.icons = {}
 
 setup_icons = function()
+    configuration.icons.videocard = wibox.widget.imagebox()
+    configuration.icons.videocard:set_image(configuration.paths.icons .. "/videocard.png")
+
     configuration.icons.cpu = wibox.widget.imagebox()
     configuration.icons.cpu:set_image(configuration.paths.icons .. "/cpu.png")
 
@@ -703,6 +707,7 @@ setup_widgets = function()
     battery_widget.update()
 
     cpu_widget:update()
+    nvidia_widget:update()
     memory_widget:update()
     volume_widget:update()
 end
@@ -781,6 +786,10 @@ setup_screen_border = function()
             right_layout:add(battery_widget.widget_icon)
             right_layout:add(battery_widget.widget_text)
         end
+
+        right_layout:add(configuration.icons.space)
+        right_layout:add(configuration.icons.videocard)
+        right_layout:add(nvidia_widget.nvidia_widget_text)
 
         right_layout:add(configuration.icons.space)
         right_layout:add(configuration.icons.cpu)
